@@ -11,7 +11,15 @@ import os
 FONT_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf"
 FONT_BOLD_PATH = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
 
-def render_terminal_window(title, lines, output_png, width=950):
+def get_capturas_dir():
+    if os.path.isdir("capturas"):
+        return "capturas"
+    elif os.path.isdir("../capturas"):
+        return "../capturas"
+    return "."
+
+def render_terminal_window(title, lines, filename, width=950):
+    output_png = os.path.join(get_capturas_dir(), os.path.basename(filename))
     font_size = 14
     try:
         font = ImageFont.truetype(FONT_PATH, font_size)

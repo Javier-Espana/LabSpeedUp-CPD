@@ -1,29 +1,22 @@
-# Lab 12 — Speedup (CC3069)
-# Linux / WSL: gcc ya trae OpenMP.
-# macOS: brew install libomp   (o: brew install gcc  y luego  make CC=gcc-14)
+# Lab 12 — Speedup y Eficiencia (CC3069)
+# Makefile principal del repositorio
 
-UNAME := $(shell uname)
+CC ?= gcc
+CFLAGS = -O2 -Wall -fopenmp
 
-ifeq ($(UNAME),Darwin)
-  ifeq ($(CC),cc)
-    CC = clang
-  endif
-  ifneq (,$(findstring clang,$(CC)))
-    LIBOMP := $(shell brew --prefix libomp 2>/dev/null)
-    CFLAGS = -O2 -Wall -Xpreprocessor -fopenmp -I$(LIBOMP)/include
-    LDFLAGS = -L$(LIBOMP)/lib -lomp
-  else
-    CFLAGS = -O2 -Wall -fopenmp
-  endif
-else
-  CC = gcc
-  CFLAGS = -O2 -Wall -fopenmp
-endif
+all: lab12
 
-lab12: lab12_speedup.c
-	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+lab12: src/lab12_speedup.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+pdfs:
+	@echo "Compilando informes en informes/..."
+	cd informes && pdflatex -interaction=nonstopmode reporte_lab12.tex
+	cd informes && pdflatex -interaction=nonstopmode evidencia_lab12.tex
+	cp informes/reporte_lab12.pdf informes/evidencia_lab12.pdf entregables/
+	rm -f informes/*.aux informes/*.log informes/*.out informes/*.toc
 
 clean:
-	rm -f lab12 *.png *_con_S_E.csv
+	rm -f lab12 src/lab12 informes/*.aux informes/*.log informes/*.out informes/*.toc
 
-.PHONY: clean
+.PHONY: all pdfs clean

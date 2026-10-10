@@ -22,27 +22,39 @@ plt.rcParams['font.sans-serif'] = 'DejaVu Sans'
 plt.rcParams['axes.edgecolor'] = '#cccccc'
 plt.rcParams['axes.linewidth'] = 0.8
 
+def get_out_dir():
+    # Si existe carpeta graficas/ relativa a la raíz o cwd, la usamos
+    if os.path.isdir("graficas"):
+        return "graficas"
+    elif os.path.isdir("../graficas"):
+        return "../graficas"
+    return "."
+
 def procesar_csv(filepath):
     """Lee CSV, calcula métricas S, E, C, F y guarda *_con_S_E.csv"""
     df = pd.read_csv(filepath)
-    # S = t_seq / t_par
     df['S'] = df['t_seq'] / df['t_par']
-    # E = S / p
     df['E'] = df['S'] / df['p']
-    # C = p * t_par
     df['C'] = df['p'] * df['t_par']
-    # F = S / C
     df['F'] = df['S'] / df['C']
     
     base, ext = os.path.splitext(filepath)
     out_name = f"{base}_con_S_E{ext}"
+    
+    # Si viene de data/originales/, guardar en data/procesados/
+    if "data/originales" in filepath or "data/originales/" in filepath:
+        out_name = filepath.replace("data/originales", "data/procesados").replace(ext, f"_con_S_E{ext}")
+        os.makedirs(os.path.dirname(out_name), exist_ok=True)
+    elif "../data/originales" in filepath:
+        out_name = filepath.replace("../data/originales", "../data/procesados").replace(ext, f"_con_S_E{ext}")
+        os.makedirs(os.path.dirname(out_name), exist_ok=True)
+        
     df.to_csv(out_name, index=False)
     print(f"Calculadas métricas S, E, C, F -> {out_name}")
     return df
 
 def graficar_amdahl(dfs):
-    """Genera gráfica 1 (Speedup) y gráfica 2 (Eficiencia) para Amdahl"""
-    # Gráfica 1: Speedup vs p para varios fp
+    outdir = get_out_dir()
     fig, ax = plt.subplots(figsize=(8, 5.5), dpi=300)
     colores = {'fp=1.00': '#1f77b4', 'fp=0.95': '#2ca02c', 'fp=0.90': '#ff7f0e',
                'fp=0.75': '#d62728', 'fp=0.50': '#9467bd'}
@@ -66,11 +78,12 @@ def graficar_amdahl(dfs):
     ax.legend(frameon=True, facecolor='white', framealpha=0.9)
     ax.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig('grafica_amdahl_speedup.png')
+    target = os.path.join(outdir, 'grafica_amdahl_speedup.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_amdahl_speedup.png")
+    print(f"Generada: {target}")
 
-    # Gráfica 2: Eficiencia vs p para varios fp
+    # Gráfica 2: Eficiencia vs p
     fig, ax = plt.subplots(figsize=(8, 5.5), dpi=300)
     for param, df in sorted(dfs.items(), reverse=True):
         df_sorted = df.sort_values('p')
@@ -88,12 +101,13 @@ def graficar_amdahl(dfs):
     ax.legend(frameon=True, facecolor='white', framealpha=0.9)
     ax.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig('grafica_amdahl_eficiencia.png')
+    target = os.path.join(outdir, 'grafica_amdahl_eficiencia.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_amdahl_eficiencia.png")
+    print(f"Generada: {target}")
 
 def graficar_suma(df):
-    """Genera gráfica 3 (Speedup vs p por tamaño N) y gráfica 4 (Speedup vs N para pmax)"""
+    outdir = get_out_dir()
     fig, ax = plt.subplots(figsize=(8.5, 5.5), dpi=300)
     tamanos = sorted(df['N'].unique())
     colores_n = plt.cm.viridis(np.linspace(0.1, 0.9, len(tamanos)))
@@ -114,11 +128,12 @@ def graficar_suma(df):
     ax.legend(frameon=True, facecolor='white', framealpha=0.9, title="Tamaño de entrada")
     ax.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig('grafica_suma_speedup.png')
+    target = os.path.join(outdir, 'grafica_suma_speedup.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_suma_speedup.png")
+    print(f"Generada: {target}")
 
-    # Gráfica 4: Granularidad - Speedup vs N para p = pmax
+    # Gráfica 4: Granularidad
     fig, ax = plt.subplots(figsize=(8.5, 5.5), dpi=300)
     sub_pmax = df[df['p'] == max_p].sort_values('N')
     ax.plot(sub_pmax['N'], sub_pmax['S'], marker='D', color='#e74c3c', linewidth=2.5, markersize=8, label=f"Speedup medido (p = {max_p})")
@@ -131,12 +146,13 @@ def graficar_suma(df):
     ax.grid(True, which="both", linestyle='--', alpha=0.5)
     ax.legend(frameon=True, facecolor='white', framealpha=0.9)
     plt.tight_layout()
-    plt.savefig('grafica_suma_granularidad.png')
+    target = os.path.join(outdir, 'grafica_suma_granularidad.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_suma_granularidad.png")
+    print(f"Generada: {target}")
 
 def graficar_desbalance(dfs):
-    """Genera gráfica 5 (Speedup) y gráfica 6 (Eficiencia) para Desbalance"""
+    outdir = get_out_dir()
     fig, ax = plt.subplots(figsize=(8, 5.5), dpi=300)
     colores_sched = {'static': '#e74c3c', 'dynamic': '#2ecc71', 'guided': '#3498db'}
     
@@ -156,9 +172,10 @@ def graficar_desbalance(dfs):
     ax.legend(frameon=True, facecolor='white', framealpha=0.9)
     ax.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig('grafica_desbalance_speedup.png')
+    target = os.path.join(outdir, 'grafica_desbalance_speedup.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_desbalance_speedup.png")
+    print(f"Generada: {target}")
 
     # Gráfica 6: Eficiencia vs p
     fig, ax = plt.subplots(figsize=(8, 5.5), dpi=300)
@@ -175,12 +192,13 @@ def graficar_desbalance(dfs):
     ax.legend(frameon=True, facecolor='white', framealpha=0.9)
     ax.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig('grafica_desbalance_eficiencia.png')
+    target = os.path.join(outdir, 'grafica_desbalance_eficiencia.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_desbalance_eficiencia.png")
+    print(f"Generada: {target}")
 
 def graficar_gustafson(df):
-    """Genera gráfica 7: Escalabilidad de Gustafson (Speedup medido vs Ideal y tiempos)"""
+    outdir = get_out_dir()
     fig, ax1 = plt.subplots(figsize=(8.5, 5.5), dpi=300)
     sub = df.sort_values('p')
     p = sub['p']
@@ -190,7 +208,6 @@ def graficar_gustafson(df):
     ax1.plot(p, S, marker='o', linewidth=2.5, color=color_s, label='Speedup Gustafson medido')
     ax1.plot(p, p, 'k--', alpha=0.6, label='Ideal lineal (S = p)')
     
-    # Amdahl predicción para fp = 0.83 (1/6 secuencial ~ 0.17)
     fp_amdahl = 100000.0 / 120000.0
     s_amdahl = 1.0 / ((1.0 - fp_amdahl) + (fp_amdahl / p))
     ax1.plot(p, s_amdahl, 'r:', linewidth=2, label=f'Amdahl fijando W (fp={fp_amdahl:.2f})')
@@ -203,24 +220,18 @@ def graficar_gustafson(df):
     ax1.legend(loc='upper left', frameon=True, facecolor='white', framealpha=0.9)
     ax1.grid(True, linestyle='--', alpha=0.6)
     plt.tight_layout()
-    plt.savefig('grafica_gustafson_speedup.png')
+    target = os.path.join(outdir, 'grafica_gustafson_speedup.png')
+    plt.savefig(target)
     plt.close()
-    print("Generada: grafica_gustafson_speedup.png")
+    print(f"Generada: {target}")
 
 def main():
     if len(sys.argv) < 2:
-        print("Uso: python3 graficar.py <archivos_csv...>")
-        print("Ejemplos:")
-        print("  python3 graficar.py amdahl_*.csv")
-        print("  python3 graficar.py suma.csv")
-        print("  python3 graficar.py desb_*.csv")
-        print("  python3 graficar.py gustafson.csv")
-        print("  python3 graficar.py *.csv")
+        print("Uso: python3 scripts/graficar.py <archivos_csv...>")
         sys.exit(1)
 
     archivos = []
     for arg in sys.argv[1:]:
-        # Expandir globs si la shell no lo hizo
         match = glob.glob(arg)
         if match:
             archivos.extend(match)
