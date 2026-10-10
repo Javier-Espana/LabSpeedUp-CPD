@@ -1,0 +1,15 @@
+# Binarios compilados
+lab12
+
+# Archivos auxiliares de LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Cache de Python
+__pycache__/
+*.pyc
