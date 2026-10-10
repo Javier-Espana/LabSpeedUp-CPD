@@ -7,7 +7,7 @@
 
 ---
 
-## 📁 Estructura del Repositorio
+## Estructura del Repositorio
 
 El repositorio se encuentra estrictamente organizado por módulos funcionales:
 
@@ -88,7 +88,7 @@ LabSpeedUp-CPD/
 
 ---
 
-## ⚙️ Especificaciones del Hardware Experimental
+## Especificaciones del Hardware Experimental
 
 - **Modelo de CPU:** AMD Ryzen 5 8400F 6-Core Processor
 - **Arquitectura:** x86_64 Zen 4 (6 núcleos físicos, 12 núcleos lógicos)
@@ -102,7 +102,7 @@ LabSpeedUp-CPD/
 
 ---
 
-## 🚀 Compilación y Ejecución
+## Compilación y Ejecución
 
 ### 1. Compilar el programa
 ```bash
@@ -148,7 +148,7 @@ Compila `informes/reporte_lab12.tex` e `informes/evidencia_lab12.tex`, y sincron
 
 ---
 
-## 📦 Entregables Oficiales
+## Entregables Oficiales
 
 Todos los archivos exigidos por la rúbrica están centralizados en el directorio [`entregables/`](entregables/):
 
